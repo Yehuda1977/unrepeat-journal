@@ -1,40 +1,25 @@
-# Unrepeat — local-first gratitude journal
+# New Again — Gratitude Journal
 
-A lightweight, mobile-friendly gratitude journal inspired by the idea of finding three new things to appreciate each day.
+A mobile-friendly, local-first gratitude journal inspired by the supplied New Again reference.
 
 ## Features
-- Three daily entries, saved automatically in browser `localStorage`
-- Repeat warnings using exact/substring matching plus a small local synonym/concept heuristic
-- Daily history
-- JSON backup and restore
-- CSV export
-- Installable PWA shell (Add to Home Screen / install where supported)
-- No account, analytics, external AI calls, or server-side journal storage
-
-## Important note about repeat detection
-The app's repeat checker is deliberately local and privacy-preserving. It catches exact wording, close phrase overlap, and selected related concepts. It is **not** a true semantic AI model and can miss paraphrases or flag unrelated entries. A genuinely strong semantic checker would require bundling a local embedding model (larger download) or using a remote AI service (which would send journal text off-device).
+- Three daily gratitude entries, saved automatically in browser localStorage
+- Repeat detection excludes the current entry itself and checks other saved entries only
+- History includes today's entries as well as previous days
+- Searchable collection, streaks, counts and a seven-day practice chart
+- Repetition sensitivity setting
+- JSON backup/restore and CSV is intentionally omitted in this redesign
+- Installable/offline PWA shell
+- No account, analytics, remote AI calls, or server-side journal storage
 
 ## Publish with GitHub Pages
-1. Create a new GitHub repository, for example `unrepeat-journal`.
-2. Upload `index.html`, `manifest.webmanifest`, `sw.js`, and this README to the repository root.
-3. In the repository, open **Settings → Pages**.
-4. Under **Build and deployment**, choose **Deploy from a branch**.
-5. Select branch `main` and folder `/ (root)`, then Save.
-6. Wait for the Pages URL to appear in Settings → Pages.
+Upload `index.html`, `manifest.webmanifest`, `sw.js`, and this README to the root of a GitHub repository. Then open Settings → Pages, choose Deploy from a branch, select `main` and `/ (root)`, and save.
 
-## Use on iPhone
-1. Open the published HTTPS GitHub Pages URL in Safari.
-2. Tap Share → Add to Home Screen.
-3. Launch from the new Home Screen icon.
+## iPhone
+Open the HTTPS Pages URL in Safari → Share → Add to Home Screen. Data is saved in that browser's local storage. It does not sync automatically with other devices. Export a JSON backup regularly.
 
-Safari stores the journal in that web app's browser storage on the iPhone. It does not automatically sync with your Mac or other browsers.
+## Storage note
+Browser storage is local to the browser/device and can be cleared by the user or browser. Export backups regularly. The app cannot silently write into arbitrary hard-drive folders; exports are downloaded and saved where you choose.
 
-## Storage and backups
-- Entries are saved in the browser on the device you use.
-- Export JSON regularly. Keep the backup in Files, iCloud Drive, or a folder on your computer.
-- Import a JSON backup on another device to transfer your journal.
-- Clearing browser website data can erase the local journal. Export a backup first.
-- The app cannot silently write to arbitrary folders on your hard drive. Export creates a downloadable file that you choose where to save.
-
-## Local preview
-Open `index.html` in a browser. For PWA/offline behavior, serve the folder over HTTPS or a local development server.
+## Repeat detection
+The checker is a local heuristic, not a semantic AI model. It excludes the entry being edited and can warn about matching wording or selected related concepts. It may miss paraphrases or flag unrelated entries; the user can always keep a flagged moment.
