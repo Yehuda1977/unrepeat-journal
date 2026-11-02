@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#f7f5ef">
+<meta name="description" content="A private, local-first gratitude journal. Three new things each day.">
+<link rel="manifest" href="manifest.webmanifest">
+<title>Unrepeat — A gratitude journal</title>
+<style>
+:root{--paper:#f7f5ef;--ink:#292a27;--muted:#77786f;--line:#e5e1d7;--green:#526b57;--green2:#e7eee5;--white:#fffefa;--red:#9a5147;--shadow:0 12px 40px #292a2710}
+*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font:16px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+button,input,textarea{font:inherit}button{cursor:pointer}
+.wrap{max-width:760px;margin:auto;padding:28px 22px calc(48px + env(safe-area-inset-bottom))}
+header{display:flex;justify-content:space-between;align-items:center;margin-bottom:42px}
+.brand{font-family:Georgia,serif;font-size:25px;letter-spacing:-.7px}.brand span{color:var(--green)}
+.tag{font-size:11px;letter-spacing:1.6px;text-transform:uppercase;color:var(--muted)}
+h1{font:400 clamp(34px,7vw,52px)/1.08 Georgia,serif;letter-spacing:-1.6px;margin:10px 0 12px}
+.sub{color:var(--muted);margin:0 0 28px}
+.date{font-size:13px;color:var(--muted);letter-spacing:.5px;text-transform:uppercase}
+.progress{display:flex;gap:8px;margin:20px 0 24px}.dot{height:4px;flex:1;border-radius:9px;background:var(--line)}.dot.done{background:var(--green)}
+.entry{background:var(--white);border:1px solid var(--line);border-radius:16px;padding:17px 18px;margin:12px 0;box-shadow:var(--shadow)}
+.entry-top{display:flex;justify-content:space-between;color:var(--muted);font-size:12px;margin-bottom:7px}
+textarea{width:100%;min-height:66px;resize:vertical;border:0;outline:0;background:transparent;color:var(--ink);font-size:17px;line-height:1.45;padding:0}
+textarea::placeholder{color:#aaa99f}
+.actions{display:flex;align-items:center;gap:12px;margin:22px 0 40px;flex-wrap:wrap}
+.primary,.secondary,.quiet{border-radius:30px;padding:12px 20px;border:1px solid var(--green);font-weight:600}
+.primary{background:var(--green);color:white}.primary:disabled{opacity:.4;cursor:not-allowed}
+.secondary{background:transparent;color:var(--green)}.quiet{border-color:transparent;background:transparent;color:var(--muted);padding:10px}
+.note{font-size:13px;color:var(--muted);margin:0}
+.warning{display:none;background:#f5e9e5;border:1px solid #ead2cb;color:#743e36;padding:12px 14px;border-radius:12px;font-size:14px;margin:14px 0}
+.panel{border-top:1px solid var(--line);padding-top:26px;margin-top:36px}
+.panel h2{font:400 25px Georgia,serif;margin:0 0 14px}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0}
+.toolbar button,.filelabel{font-size:13px;border:1px solid var(--line);border-radius:22px;background:transparent;padding:8px 12px;color:var(--ink)}
+.history-day{padding:14px 0;border-bottom:1px solid var(--line)}
+.history-day strong{font-size:13px;color:var(--green)}.history-day p{margin:6px 0 0;color:#55564f}
+.empty{color:var(--muted);font-size:14px}
+footer{margin-top:42px;color:var(--muted);font-size:12px;text-align:center}
+#toast{position:fixed;bottom:calc(18px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);background:#292a27;color:white;padding:10px 16px;border-radius:30px;font-size:13px;opacity:0;pointer-events:none;transition:.2s}
+#toast.show{opacity:1}
+.modal{display:none;position:fixed;inset:0;background:#17181277;align-items:center;justify-content:center;padding:20px}.modal.open{display:flex}.dialog{background:var(--white);border-radius:18px;padding:24px;max-width:440px;width:100%}.dialog h2{font:26px Georgia,serif;margin:0 0 8px}.dialog p{font-size:14px;color:var(--muted)}
+@media(min-width:650px){.wrap{padding-top:42px}.entry{padding:19px 22px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header><div class="brand">un<span>repeat</span></div><div class="tag">A practice of noticing</div></header>
+<main>
+<div class="date" id="today"></div>
+<h1>What was worth<br>noticing today?</h1>
+<p class="sub">Three things. Small or significant. Try to find something new.</p>
+<div class="progress" aria-label="Daily progress"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+<div id="entries"></div>
+<div id="warning" class="warning" role="alert"></div>
+<div class="actions"><button class="primary" id="saveBtn">Save today's entries</button><span class="note" id="saveStatus">Saved privately on this device</span></div>
+<section class="panel">
+<h2>Your journal</h2>
+<div class="toolbar">
+<button id="historyBtn">Show history</button><button id="exportBtn">Export backup</button><label class="filelabel">Import backup<input id="importFile" type="file" accept="application/json,.json" hidden></label><button id="csvBtn">Download CSV</button>
+</div>
+<div id="history" class="empty">Your previous entries will appear here.</div>
+</section>
+<section class="panel">
+<h2>A note on repeats</h2>
+<p class="note">The journal checks new entries against your past writing using normalized wording, shared key phrases, and a small built-in set of related concepts. It works entirely on this device. This is a helpful first-pass check, not a human-level understanding of meaning; review the suggestions and decide for yourself.</p>
+</section>
+</main>
+<footer>Your journal stays in this browser. Export backups regularly, especially before clearing browser data.</footer>
+</div>
+<div id="toast"></div>
+<div class="modal" id="repeatModal"><div class="dialog"><h2>That sounds familiar</h2><p id="repeatText"></p><p>It may overlap with something you've already recorded. You can revise it, or save it anyway if today's experience feels meaningfully different.</p><div class="toolbar"><button id="reviseBtn">I'll revise it</button><button id="keepBtn">Save anyway</button></div></div></div>
+<script>
+const KEY='unrepeat-local-v1';
+const $=id=>document.getElementById(id);
+const todayKey=()=>{const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`};
+const prettyDate=(s)=>new Date(s+'T12:00:00').toLocaleDateString(undefined,{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+let data=load(), pendingRepeat=null;
+function load(){try{return JSON.parse(localStorage.getItem(KEY))||{days:{}}}catch{return {days:{}}}}
+function persist(){localStorage.setItem(KEY,JSON.stringify(data));$('saveStatus').textContent='Saved privately on this device';}
+function toast(s){$('toast').textContent=s;$('toast').classList.add('show');setTimeout(()=>$('toast').classList.remove('show'),2200)}
+function allEntries(){return Object.entries(data.days).flatMap(([date,items])=>items.map((text,index)=>({date,text,index})))}
+function normalize(s){return s.toLowerCase().normalize('NFKD').replace(/[^\p{L}\p{N}\s]/gu,' ').replace(/\s+/g,' ').trim()}
+const stop=new Set('the and for with from that this was were are have had has into onto about after before very really just some something someone today yesterday then when while because'.split(' '));
+const groups=[
+['walk','walking','stroll','hike'],['friend','friends','friendship','companion'],
+['family','mom','mother','dad','father','parent','sister','brother','child','children'],
+['sun','sunshine','sunlight','sunny'],['coffee','espresso','latte'],['meal','dinner','lunch','breakfast','food'],
+['prayer','davening','tefillah'],['learn','learning','study','studying','lesson'],
+['music','song','singing','piano','guitar'],['laugh','laughter','funny','joke'],
+['rest','nap','sleep','slept'],['nature','tree','flowers','bird','birds','garden'],
+['help','helped','support','kindness','generous'],['health','healthy','energy','strong']
+];
+function tokens(s){return normalize(s).split(' ').filter(w=>w.length>2&&!stop.has(w))}
+function concepts(s){let t=new Set(tokens(s));for(const g of groups)if(g.some(x=>t.has(x)))g.forEach(x=>t.add(x));return t}
+function similarity(a,b){let A=concepts(a),B=concepts(b),inter=[...A].filter(x=>B.has(x)).length;return inter/Math.max(1,new Set([...A,...B]).size)}
+function findRepeat(text){let n=normalize(text);if(!n)return null;for(const old of allEntries()){let o=normalize(old.text);if(n===o||n.includes(o)||o.includes(n)||similarity(text,old.text)>=.48)return old;}return null}
+function render(){const key=todayKey();$('today').textContent=prettyDate(key);let items=data.days[key]||['','',''];items=[...items];while(items.length<3)items.push('');
+$('entries').innerHTML=items.slice(0,3).map((v,i)=>`<div class="entry"><div class="entry-top"><span>NOTICING 0${i+1}</span><span>${v.trim()?'Draft saved':'A moment, a person, a detail…'}</span></div><textarea maxlength="500" aria-label="Gratitude entry ${i+1}" placeholder="${['Something that brought you joy…','Something you appreciated…','Something small you might otherwise overlook…'][i]}">${escapeHtml(v)}</textarea></div>`).join('');
+document.querySelectorAll('textarea').forEach((el,i)=>el.addEventListener('input',()=>{let a=data.days[key]||['','',''];a[i]=el.value;data.days[key]=a;persist();updateProgress()}));
+updateProgress();renderHistory(false)}
+function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function updateProgress(){let vals=[...document.querySelectorAll('textarea')].map(x=>x.value.trim());document.querySelectorAll('.dot').forEach((d,i)=>d.classList.toggle('done',!!vals[i]));$('saveBtn').disabled=vals.filter(Boolean).length!==3}
+function save(){let vals=[...document.querySelectorAll('textarea')].map(x=>x.value.trim());if(vals.some(x=>!x)){toast('Add all three entries first.');return}for(let i=0;i<3;i++){let old=findRepeat(vals[i]);if(old){pendingRepeat={vals,index:i,old};$('repeatText').textContent=`“${old.text}” — ${prettyDate(old.date)}`;$('repeatModal').classList.add('open');return}}commit(vals)}
+function commit(vals){data.days[todayKey()]=vals;persist();render();toast('Today’s entries are saved.')}
+$('saveBtn').addEventListener('click',save);
+$('reviseBtn').onclick=()=>{$('repeatModal').classList.remove('open');let area=document.querySelectorAll('textarea')[pendingRepeat.index];area.focus();toast('Try describing a different detail.');};
+$('keepBtn').onclick=()=>{$('repeatModal').classList.remove('open');let p=pendingRepeat;pendingRepeat=null;commit(p.vals)};
+function renderHistory(show=true){let el=$('history'),days=Object.entries(data.days).filter(([d,a])=>d!==todayKey()&&a.some(x=>x.trim())).sort((a,b)=>b[0].localeCompare(a[0]));if(!days.length){el.className='empty';el.textContent='Your previous entries will appear here.';return}el.className='';el.innerHTML=days.map(([d,a])=>`<div class="history-day"><strong>${prettyDate(d)}</strong>${a.filter(x=>x.trim()).map(x=>`<p>• ${escapeHtml(x)}</p>`).join('')}</div>`).join('');}
+$('historyBtn').onclick=()=>{renderHistory();$('historyBtn').textContent='Refresh history'};
+$('exportBtn').onclick=()=>{download('unrepeat-backup-'+todayKey()+'.json',JSON.stringify({format:'unrepeat-backup',version:1,exportedAt:new Date().toISOString(),days:data.days},null,2),'application/json');toast('Backup exported.')};
+$('importFile').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{const obj=JSON.parse(await f.text());if(!obj.days||typeof obj.days!=='object')throw Error();if(!confirm('Import and merge this backup with the entries on this device? Existing dates in the backup will replace matching dates.'))return;data.days={...data.days,...obj.days};persist();render();toast('Backup imported.')}catch{alert('That file does not look like a valid Unrepeat backup.')}e.target.value=''};
+$('csvBtn').onclick=()=>{let rows=[['Date','Entry number','Entry'],...Object.entries(data.days).sort().flatMap(([d,a])=>a.map((x,i)=>[d,i+1,x]))];let csv=rows.map(r=>r.map(x=>'"'+String(x).replace(/"/g,'""')+'"').join(',')).join('\n');download('unrepeat-journal-'+todayKey()+'.csv',csv,'text/csv');toast('CSV downloaded.')};
+function download(name,content,type){let blob=new Blob([content],{type}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;a.click();URL.revokeObjectURL(url)}
+render();
+if('serviceWorker' in navigator && location.protocol.startsWith('http'))navigator.serviceWorker.register('./sw.js').catch(()=>{});
+</script>
+</body></html>
